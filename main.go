@@ -37,7 +37,6 @@ var (
 )
 
 func init() {
-
 	_ = kscheme.AddToScheme(scheme)
 	_ = azurev1alpha1.AddToScheme(scheme)
 	_ = azurev1beta1.AddToScheme(scheme)
@@ -57,10 +56,14 @@ func init() {
 func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
+	var webhookServerPort int
+	var webhookServerCertDir string
 	var secretClient secrets.SecretClient
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
+	flag.IntVar(&webhookServerPort, "webhook-server-port", 9443, "The port the webhook endpoint binds to.")
+	flag.StringVar(&webhookServerCertDir, "webhook-server-cert-dir", "", "The directory the webhook server's certs are stored.")
 
 	flag.Parse()
 
@@ -96,10 +99,10 @@ func main() {
 			BindAddress: metricsAddr,
 		},
 		WebhookServer: webhook.NewServer(webhook.Options{
-			Port: 9443,
+			Port:    webhookServerPort,
+			CertDir: webhookServerCertDir,
 		}),
 	})
-
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
@@ -140,5 +143,4 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
-
 }
