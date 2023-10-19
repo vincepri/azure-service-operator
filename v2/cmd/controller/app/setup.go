@@ -31,7 +31,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
@@ -125,8 +124,11 @@ func SetupControllerManager(ctx context.Context, setupLog logr.Logger, flgs Flag
 		LeaderElectionID:       "controllers-leader-election-azinfra-generated",
 		Port:                   9443,
 		HealthProbeBindAddress: flgs.HealthAddr,
+		WebhookServer: webhook.NewServer(webhook.Options{
+			Port:    flgs.WebhookPort,
+			CertDir: flgs.WebhookCertDir,
+		}),
 	})
-
 	if err != nil {
 		setupLog.Error(err, "unable to create manager")
 		os.Exit(1)
