@@ -18,16 +18,18 @@ type Flags struct {
 	MetricsAddr          string
 	HealthAddr           string
 	EnableLeaderElection bool
+	EnableCRDManagement  bool
 	CRDPatterns          string // This is a ; delimited string containing a collection of patterns
 	PreUpgradeCheck      bool
 }
 
 func (f Flags) String() string {
 	return fmt.Sprintf(
-		"MetricsAddr: %s, HealthAddr: %s, EnableLeaderElection: %t, CRDPatterns: %s, PreUpgradeCheck: %t",
+		"MetricsAddr: %s, HealthAddr: %s, Webhook=Port: %d, WebhookCertDir: %s, EnableLeaderElection: %t, EnableCRDManagement: %t, CRDPatterns: %s, PreUpgradeCheck: %t",
 		f.MetricsAddr,
 		f.HealthAddr,
 		f.EnableLeaderElection,
+		f.EnableCRDManagement,
 		f.CRDPatterns,
 		f.PreUpgradeCheck)
 }
@@ -40,6 +42,7 @@ func ParseFlags(args []string) (Flags, error) {
 	var metricsAddr string
 	var healthAddr string
 	var enableLeaderElection bool
+	var enableCRDmanagement bool
 	var crdPatterns string
 	var preUpgradeCheck bool
 
@@ -48,6 +51,8 @@ func ParseFlags(args []string) (Flags, error) {
 	flagSet.StringVar(&healthAddr, "health-addr", "", "The address the healthz endpoint binds to.")
 	flagSet.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controllers manager. Enabling this will ensure there is only one active controllers manager.")
+	flagSet.BoolVar(&enableCRDmanagement, "enable-crd-management", true,
+		"Allows the operator to manage all custom resource definitions, including upgrades.")
 	flagSet.StringVar(&crdPatterns, "crd-pattern", "", "Install these CRDs. CRDs already in the cluster will also always be upgraded.")
 	flagSet.BoolVar(&preUpgradeCheck, "pre-upgrade-check", false,
 		"Enable pre upgrade check to check if existing crds contain helm 'keep' policy.")
@@ -58,6 +63,7 @@ func ParseFlags(args []string) (Flags, error) {
 		MetricsAddr:          metricsAddr,
 		HealthAddr:           healthAddr,
 		EnableLeaderElection: enableLeaderElection,
+		EnableCRDManagement:  enableCRDmanagement,
 		CRDPatterns:          crdPatterns,
 		PreUpgradeCheck:      preUpgradeCheck,
 	}, nil
